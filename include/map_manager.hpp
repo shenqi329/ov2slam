@@ -28,9 +28,12 @@
 
 #include <mutex>
 #include <unordered_map>
-
+#ifdef XTC_ANDROID
+#include <fstream>
+#include <iomanip>
+#else
 #include <pcl_ros/point_cloud.h>
-
+#endif
 #include "slam_params.hpp"
 #include "frame.hpp"
 #include "map_point.hpp"
@@ -119,9 +122,9 @@ public:
 
     std::unordered_map<int, std::shared_ptr<Frame>> map_pkfs_;
     std::unordered_map<int, std::shared_ptr<MapPoint>> map_plms_;
-
+#ifndef XTC_ANDROID
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud_;
-
+#endif
     mutable std::mutex kf_mutex_, lm_mutex_;
     mutable std::mutex curframe_mutex_;
 

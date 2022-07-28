@@ -33,8 +33,10 @@
 MapManager::MapManager(std::shared_ptr<SlamParams> pstate, std::shared_ptr<Frame> pframe, std::shared_ptr<FeatureExtractor> pfeatextract, std::shared_ptr<FeatureTracker> ptracker)
     : nlmid_(0), nkfid_(0), nblms_(0), nbkfs_(0), pslamstate_(pstate), pfeatextract_(pfeatextract), ptracker_(ptracker), pcurframe_(pframe)
 {
+#ifndef XTC_ANDROID
     pcloud_.reset( new pcl::PointCloud<pcl::PointXYZRGB>() );
     pcloud_->points.reserve(1e5);
+#endif
 }
 
 
@@ -643,6 +645,7 @@ void MapManager::addMapPoint(const cv::Scalar &color)
     nlmid_++;
     nblms_++;
 
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
     if( plm->isobs_ ) {
@@ -657,6 +660,7 @@ void MapManager::addMapPoint(const cv::Scalar &color)
     colored_pt.y = 0.;
     colored_pt.z = 0.;
     pcloud_->points.push_back(colored_pt);
+#endif
 }
 
 
@@ -670,7 +674,7 @@ void MapManager::addMapPoint(const cv::Mat &desc, const cv::Scalar &color)
     map_plms_.emplace(nlmid_, plm);
     nlmid_++;
     nblms_++;
-
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
     if( plm->isobs_ ) {
@@ -685,6 +689,7 @@ void MapManager::addMapPoint(const cv::Mat &desc, const cv::Scalar &color)
     colored_pt.y = 0.;
     colored_pt.z = 0.;
     pcloud_->points.push_back(colored_pt);
+#endif
 }
 
 // Returns a shared_ptr of the req. KF
@@ -748,7 +753,7 @@ void MapManager::updateMapPoint(const int lmid, const Eigen::Vector3d &wpt, cons
     } else {
         plmit->second->setPoint(wpt);
     }
-
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
     if(plmit->second->isobs_ ) {
@@ -763,6 +768,7 @@ void MapManager::updateMapPoint(const int lmid, const Eigen::Vector3d &wpt, cons
     colored_pt.y = wpt.y();
     colored_pt.z = wpt.z();
     pcloud_->points.at(lmid) = colored_pt;
+#endif
 }
 
 // Add a new KF obs to provided MP (lmid)
@@ -871,7 +877,7 @@ void MapManager::mergeMapPoints(const int prevlmid, const int newlmid)
 
     // Erase MP and update nb MPs
     map_plms_.erase( pprevlmit );
-    
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
     colored_pt = pcl::PointXYZRGB(0, 0, 0);
@@ -879,6 +885,7 @@ void MapManager::mergeMapPoints(const int prevlmid, const int newlmid)
     colored_pt.y = 0.;
     colored_pt.z = 0.;
     pcloud_->points[prevlmid] = colored_pt;
+#endif
 }
 
 // Remove a KF from the map
@@ -956,7 +963,7 @@ void MapManager::removeMapPoint(const int lmid)
         // Erase MP and update nb MPs
         map_plms_.erase( plmit );
     }
-
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
     colored_pt = pcl::PointXYZRGB(0, 0, 0);
@@ -964,6 +971,7 @@ void MapManager::removeMapPoint(const int lmid)
     colored_pt.y = 0.;
     colored_pt.z = 0.;
     pcloud_->points.at(lmid) = colored_pt;
+#endif
 }
 
 // Remove a KF obs from a MP
@@ -1025,7 +1033,7 @@ void MapManager::removeObsFromCurFrameById(const int lmid)
     
     // Set MP as not obs
     auto plmit = map_plms_.find(lmid);
-
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
 
@@ -1048,16 +1056,19 @@ void MapManager::removeObsFromCurFrameById(const int lmid)
     colored_pt.y = pcloud_->points.at(lmid).y;
     colored_pt.z = pcloud_->points.at(lmid).z;
     pcloud_->points.at(lmid) = colored_pt;
+#endif
 }
 
 bool MapManager::setMapPointObs(const int lmid) 
 {
+#ifndef XTC_ANDROID
     if( lmid >= (int)pcloud_->points.size() ) {
         return false;
     }
+#endif
 
     auto plmit = map_plms_.find(lmid);
-
+#ifndef XTC_ANDROID
     // Visualization related part for pointcloud obs
     pcl::PointXYZRGB colored_pt;
 
@@ -1067,16 +1078,16 @@ bool MapManager::setMapPointObs(const int lmid)
         pcloud_->points.at(lmid) = colored_pt;
         return false;
     }
-
+#endif
     plmit->second->isobs_ = true;
-
+#ifndef XTC_ANDROID
     // Update MP color
     colored_pt = pcl::PointXYZRGB(200, 0, 0);
     colored_pt.x = pcloud_->points.at(lmid).x;
     colored_pt.y = pcloud_->points.at(lmid).y;
     colored_pt.z = pcloud_->points.at(lmid).z;
     pcloud_->points.at(lmid) = colored_pt;
-
+#endif
     return true;
 }
 
@@ -1090,6 +1101,7 @@ void MapManager::reset()
 
     map_pkfs_.clear();
     map_plms_.clear();
-
+#ifndef XTC_ANDROID
     pcloud_->points.clear();
+#endif
 }

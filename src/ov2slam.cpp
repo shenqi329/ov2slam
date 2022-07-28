@@ -30,9 +30,15 @@
 #include "ov2slam.hpp"
 
 
-SlamManager::SlamManager(std::shared_ptr<SlamParams> pstate, std::shared_ptr<RosVisualizer> pviz)
+SlamManager::SlamManager(std::shared_ptr<SlamParams> pstate
+#ifndef XTC_ANDROID
+        , std::shared_ptr<RosVisualizer> pviz
+#endif
+        )
     : pslamstate_(pstate)
+#ifndef XTC_ANDROID
     , prosviz_(pviz)
+#endif
 {
     std::cout << "\n SLAM Manager is being created...\n";
 
@@ -195,15 +201,16 @@ void SlamManager::run()
 
             if( pslamstate_->debug_ || pslamstate_->log_timings_ )
                 std::cout << Profiler::getInstance().displayTimeLogs() << std::endl;
-
+#ifndef XTC_ANDROID
             // Frame rate visualization (limit the visualization processing)
             if( !bframe_viz_ison_ ) {
                 std::thread viz_thread(&SlamManager::visualizeAtFrameRate, this, time);
                 viz_thread.detach();
             }
+#endif
         } 
         else {
-
+#ifndef XTC_ANDROID
             // 3. Check if we are done with a sequence!
             // ========================================
             bool c1 = cam_delay > 0;
@@ -228,6 +235,7 @@ void SlamManager::run()
                 std::chrono::milliseconds dura(1);
                 std::this_thread::sleep_for(dura);
             }
+#endif
         }
     }
 
@@ -457,7 +465,7 @@ void SlamManager::reset()
 // ==========================
 //   Visualization functions
 // ==========================
-
+#ifndef XTC_ANDROID
 void SlamManager::visualizeAtFrameRate(const double time) 
 {
     bframe_viz_ison_ = true;
@@ -699,3 +707,4 @@ void SlamManager::writeFullTrajectoryLC()
     // Apply full pose graph for optimal full trajectory w. LC
     pmapper_->pestimator_->poptimizer_->fullPoseGraph(vTwc, vTpc, viskf);
 }
+#endif

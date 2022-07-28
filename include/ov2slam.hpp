@@ -50,8 +50,11 @@ class SlamManager {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    SlamManager(std::shared_ptr<SlamParams> pstate, std::shared_ptr<RosVisualizer> pviz);
-
+    SlamManager(std::shared_ptr<SlamParams> pstate
+#ifndef XTC_ANDROID
+            , std::shared_ptr<RosVisualizer> pviz
+#endif
+            );
     void run();
 
     bool getNewImage(cv::Mat &iml, cv::Mat &imr, double &time);
@@ -63,7 +66,7 @@ public:
     void setupStereoCalibration();
     
     void reset();
-
+#ifndef XTC_ANDROID
     void writeResults();
 
     void writeFullTrajectoryLC();
@@ -77,7 +80,7 @@ public:
     void visualizeFullKFsTraj(const double time);
     
     void visualizeFinalKFsTraj();
-
+#endif
     int frame_id_ = -1;
     bool bnew_img_available_ = false;
 
@@ -88,8 +91,9 @@ public:
     bool bkf_viz_ison_ = false;
 
     std::shared_ptr<SlamParams> pslamstate_;
+#ifndef XTC_ANDROID
     std::shared_ptr<RosVisualizer> prosviz_;
-
+#endif
     std::shared_ptr<CameraCalibration> pcalib_model_left_;
     std::shared_ptr<CameraCalibration> pcalib_model_right_;
 
